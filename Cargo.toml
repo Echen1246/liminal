@@ -1,0 +1,74 @@
+[package]
+name = "liminal"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A modern, GPU-accelerated terminal emulator with local AI integration"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# Core async runtime
+tokio = { version = "1.0", features = ["full"] }
+
+# GUI and rendering
+winit = "0.30"
+wgpu = "0.16"
+pollster = "0.3"
+
+# Text rendering and font handling
+wgpu_glyph = "0.20"
+ab_glyph = "0.2"
+bytemuck = { version = "1.0", features = ["derive"] }
+
+# Terminal emulation
+vte = "0.13"
+
+# Process management
+tokio-process = "0.2"
+
+# HTTP client for Ollama API
+reqwest = { version = "0.12", features = ["json"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Configuration
+toml = "0.8"
+
+# Cross-platform utilities
+dirs = "5.0"
+
+# Color handling
+rgb = "0.8"
+
+# Terminal colors and ANSI parsing
+ansi_term = "0.12"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bin]]
+name = "liminal"
+path = "src/main.rs"
+
+[[example]]
+name = "ollama_integration"
+path = "examples/ollama_integration.rs"
+
+[[example]]
+name = "wgpu_text_rendering"
+path = "examples/wgpu_text_rendering.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1 
