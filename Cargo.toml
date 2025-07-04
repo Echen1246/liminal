@@ -44,6 +44,9 @@ thiserror = "1.0"
 # Configuration
 toml = "0.8"
 
+# Date and time
+chrono = { version = "0.4", features = ["serde"] }
+
 # Cross-platform utilities
 dirs = "5.0"
 

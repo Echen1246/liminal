@@ -1,0 +1,74 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lock file (keep for applications, remove for libraries)
+# Cargo.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment and config files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Local configuration that shouldn't be shared
+config/local.toml
+
+# Ollama models and cache
+.ollama/
+*.gguf
+
+# Fonts cache (keep the actual font files)
+.fontconfig/
+
+# macOS specific
+*.dSYM/
+
+# Windows specific
+*.exe
+*.dll
+*.pdb
+
+# Linux specific
+*.so
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# Coverage reports
+tarpaulin-report.html
+cobertura.xml
+
+# Benchmark results
+criterion/
+
+# Documentation build
+book/
+target/doc/ 
