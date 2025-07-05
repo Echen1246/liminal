@@ -1,6 +1,5 @@
 use crate::errors::*;
 use winit::dpi::PhysicalSize;
-use std::collections::HashMap;
 
 /// Modern UI widget trait - not terminal cell based
 pub trait Widget {
@@ -44,8 +43,12 @@ pub enum WidgetType {
 #[derive(Debug, Clone)]
 pub enum WidgetEvent {
     Click { x: f32, y: f32 },
+    DoubleClick { x: f32, y: f32 },
+    RightClick { x: f32, y: f32 },
     Hover { hovering: bool },
-    KeyPress { key: String },
+    Drag { start_x: f32, start_y: f32, x: f32, y: f32 },
+    Scroll { x: f32, y: f32, delta_x: f32, delta_y: f32 },
+    KeyPress { key: String, modifiers: super::events::Modifiers },
     TextInput { text: String },
     Focus,
     Blur,
@@ -263,7 +266,7 @@ impl Widget for AIPanel {
             WidgetEvent::TextInput { text } => {
                 self.input_text = text;
             }
-            WidgetEvent::KeyPress { key } => {
+            WidgetEvent::KeyPress { key, modifiers: _ } => {
                 if key == "Enter" && !self.input_text.is_empty() {
                     let user_message = self.input_text.clone();
                     self.add_message(AIRole::User, user_message);

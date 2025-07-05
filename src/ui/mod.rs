@@ -65,6 +65,24 @@ impl UiManager {
                     }
                 }
             }
+            UiEvent::DoubleClick { x, y } => {
+                // Handle double click events
+                for widget in &mut self.widgets {
+                    if widget.bounds().contains_point(x, y) {
+                        widget.handle_event(WidgetEvent::DoubleClick { x, y })?;
+                        break;
+                    }
+                }
+            }
+            UiEvent::RightClick { x, y } => {
+                // Handle right click events (context menu)
+                for widget in &mut self.widgets {
+                    if widget.bounds().contains_point(x, y) {
+                        widget.handle_event(WidgetEvent::RightClick { x, y })?;
+                        break;
+                    }
+                }
+            }
             UiEvent::Hover { x, y } => {
                 for widget in &mut self.widgets {
                     widget.handle_event(WidgetEvent::Hover { 
@@ -72,9 +90,51 @@ impl UiManager {
                     })?;
                 }
             }
+            UiEvent::Drag { start_x, start_y, x, y } => {
+                // Handle drag events
+                for widget in &mut self.widgets {
+                    if widget.bounds().contains_point(start_x, start_y) {
+                        widget.handle_event(WidgetEvent::Drag { start_x, start_y, x, y })?;
+                        break;
+                    }
+                }
+            }
+            UiEvent::Scroll { x, y, delta_x, delta_y } => {
+                // Handle scroll events
+                for widget in &mut self.widgets {
+                    if widget.bounds().contains_point(x, y) {
+                        widget.handle_event(WidgetEvent::Scroll { x, y, delta_x, delta_y })?;
+                        break;
+                    }
+                }
+            }
+            UiEvent::KeyPress { key, modifiers } => {
+                // Send key press to focused widget
+                if let Some(focused_idx) = self.focused_widget {
+                    if let Some(widget) = self.widgets.get_mut(focused_idx) {
+                        widget.handle_event(WidgetEvent::KeyPress { key, modifiers })?;
+                    }
+                }
+            }
+            UiEvent::TextInput { text } => {
+                // Send text input to focused widget
+                if let Some(focused_idx) = self.focused_widget {
+                    if let Some(widget) = self.widgets.get_mut(focused_idx) {
+                        widget.handle_event(WidgetEvent::TextInput { text })?;
+                    }
+                }
+            }
             UiEvent::Resize { width, height } => {
                 self.size = PhysicalSize::new(width, height);
                 self.layout()?;
+            }
+            UiEvent::Focus => {
+                // Handle focus events
+                // For now, just update internal state
+            }
+            UiEvent::Blur => {
+                // Handle blur events
+                self.focused_widget = None;
             }
         }
         Ok(())

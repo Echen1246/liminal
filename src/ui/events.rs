@@ -1,6 +1,7 @@
 use crate::errors::*;
-use winit::event::{WindowEvent, KeyboardInput, MouseButton, ElementState};
+use winit::event::{WindowEvent, MouseButton, ElementState};
 use winit::dpi::PhysicalPosition;
+use winit::keyboard::{KeyCode, PhysicalKey};
 
 /// High-level UI events (not terminal-specific)
 #[derive(Debug, Clone)]
@@ -152,19 +153,8 @@ impl EventHandler {
                 }
             }
             
-            WindowEvent::KeyboardInput { input, .. } => {
-                self.handle_keyboard_input(input)
-            }
-            
-            WindowEvent::ReceivedCharacter(char) => {
-                // Filter out control characters
-                if !char.is_control() {
-                    Some(UiEvent::TextInput {
-                        text: char.to_string(),
-                    })
-                } else {
-                    None
-                }
+            WindowEvent::KeyboardInput { event, .. } => {
+                self.handle_keyboard_input(event)
             }
             
             WindowEvent::Resized(size) => {
@@ -186,16 +176,16 @@ impl EventHandler {
         }
     }
     
-    fn handle_keyboard_input(&mut self, input: &KeyboardInput) -> Option<UiEvent> {
-        if input.state != ElementState::Pressed {
+    fn handle_keyboard_input(&mut self, event: &winit::event::KeyEvent) -> Option<UiEvent> {
+        if event.state != ElementState::Pressed {
             return None;
         }
         
         // Update modifiers
-        self.update_modifiers(input);
+        self.update_modifiers(event);
         
-        // Convert virtual key code to string
-        if let Some(key_string) = self.virtual_key_to_string(input.virtual_keycode) {
+        // Convert key code to string
+        if let Some(key_string) = self.key_code_to_string(&event.physical_key) {
             Some(UiEvent::KeyPress {
                 key: key_string,
                 modifiers: self.modifiers.clone(),
@@ -205,101 +195,102 @@ impl EventHandler {
         }
     }
     
-    fn update_modifiers(&mut self, input: &KeyboardInput) {
-        // Note: This is a simplified approach
-        // In a real implementation, you'd track modifier state more carefully
-        use winit::event::VirtualKeyCode;
-        
-        match input.virtual_keycode {
-            Some(VirtualKeyCode::LControl) | Some(VirtualKeyCode::RControl) => {
-                self.modifiers.ctrl = input.state == ElementState::Pressed;
+    fn update_modifiers(&mut self, event: &winit::event::KeyEvent) {
+        // Update modifiers based on the key event
+        // This is a simplified approach - in practice you'd track modifier state more carefully
+        match event.physical_key {
+            PhysicalKey::Code(KeyCode::ControlLeft) | PhysicalKey::Code(KeyCode::ControlRight) => {
+                self.modifiers.ctrl = event.state == ElementState::Pressed;
             }
-            Some(VirtualKeyCode::LAlt) | Some(VirtualKeyCode::RAlt) => {
-                self.modifiers.alt = input.state == ElementState::Pressed;
+            PhysicalKey::Code(KeyCode::AltLeft) | PhysicalKey::Code(KeyCode::AltRight) => {
+                self.modifiers.alt = event.state == ElementState::Pressed;
             }
-            Some(VirtualKeyCode::LShift) | Some(VirtualKeyCode::RShift) => {
-                self.modifiers.shift = input.state == ElementState::Pressed;
+            PhysicalKey::Code(KeyCode::ShiftLeft) | PhysicalKey::Code(KeyCode::ShiftRight) => {
+                self.modifiers.shift = event.state == ElementState::Pressed;
             }
-            Some(VirtualKeyCode::LWin) | Some(VirtualKeyCode::RWin) => {
-                self.modifiers.cmd = input.state == ElementState::Pressed;
+            PhysicalKey::Code(KeyCode::SuperLeft) | PhysicalKey::Code(KeyCode::SuperRight) => {
+                self.modifiers.cmd = event.state == ElementState::Pressed;
             }
             _ => {}
         }
     }
     
-    fn virtual_key_to_string(&self, key_code: Option<winit::event::VirtualKeyCode>) -> Option<String> {
-        use winit::event::VirtualKeyCode;
-        
-        match key_code? {
-            VirtualKeyCode::Return => Some("Enter".to_string()),
-            VirtualKeyCode::Space => Some("Space".to_string()),
-            VirtualKeyCode::Back => Some("Backspace".to_string()),
-            VirtualKeyCode::Delete => Some("Delete".to_string()),
-            VirtualKeyCode::Tab => Some("Tab".to_string()),
-            VirtualKeyCode::Escape => Some("Escape".to_string()),
-            VirtualKeyCode::Up => Some("ArrowUp".to_string()),
-            VirtualKeyCode::Down => Some("ArrowDown".to_string()),
-            VirtualKeyCode::Left => Some("ArrowLeft".to_string()),
-            VirtualKeyCode::Right => Some("ArrowRight".to_string()),
-            VirtualKeyCode::Home => Some("Home".to_string()),
-            VirtualKeyCode::End => Some("End".to_string()),
-            VirtualKeyCode::PageUp => Some("PageUp".to_string()),
-            VirtualKeyCode::PageDown => Some("PageDown".to_string()),
-            
-            // Function keys
-            VirtualKeyCode::F1 => Some("F1".to_string()),
-            VirtualKeyCode::F2 => Some("F2".to_string()),
-            VirtualKeyCode::F3 => Some("F3".to_string()),
-            VirtualKeyCode::F4 => Some("F4".to_string()),
-            VirtualKeyCode::F5 => Some("F5".to_string()),
-            VirtualKeyCode::F6 => Some("F6".to_string()),
-            VirtualKeyCode::F7 => Some("F7".to_string()),
-            VirtualKeyCode::F8 => Some("F8".to_string()),
-            VirtualKeyCode::F9 => Some("F9".to_string()),
-            VirtualKeyCode::F10 => Some("F10".to_string()),
-            VirtualKeyCode::F11 => Some("F11".to_string()),
-            VirtualKeyCode::F12 => Some("F12".to_string()),
-            
-            // Letters
-            VirtualKeyCode::A => Some("a".to_string()),
-            VirtualKeyCode::B => Some("b".to_string()),
-            VirtualKeyCode::C => Some("c".to_string()),
-            VirtualKeyCode::D => Some("d".to_string()),
-            VirtualKeyCode::E => Some("e".to_string()),
-            VirtualKeyCode::F => Some("f".to_string()),
-            VirtualKeyCode::G => Some("g".to_string()),
-            VirtualKeyCode::H => Some("h".to_string()),
-            VirtualKeyCode::I => Some("i".to_string()),
-            VirtualKeyCode::J => Some("j".to_string()),
-            VirtualKeyCode::K => Some("k".to_string()),
-            VirtualKeyCode::L => Some("l".to_string()),
-            VirtualKeyCode::M => Some("m".to_string()),
-            VirtualKeyCode::N => Some("n".to_string()),
-            VirtualKeyCode::O => Some("o".to_string()),
-            VirtualKeyCode::P => Some("p".to_string()),
-            VirtualKeyCode::Q => Some("q".to_string()),
-            VirtualKeyCode::R => Some("r".to_string()),
-            VirtualKeyCode::S => Some("s".to_string()),
-            VirtualKeyCode::T => Some("t".to_string()),
-            VirtualKeyCode::U => Some("u".to_string()),
-            VirtualKeyCode::V => Some("v".to_string()),
-            VirtualKeyCode::W => Some("w".to_string()),
-            VirtualKeyCode::X => Some("x".to_string()),
-            VirtualKeyCode::Y => Some("y".to_string()),
-            VirtualKeyCode::Z => Some("z".to_string()),
-            
-            // Numbers
-            VirtualKeyCode::Key1 => Some("1".to_string()),
-            VirtualKeyCode::Key2 => Some("2".to_string()),
-            VirtualKeyCode::Key3 => Some("3".to_string()),
-            VirtualKeyCode::Key4 => Some("4".to_string()),
-            VirtualKeyCode::Key5 => Some("5".to_string()),
-            VirtualKeyCode::Key6 => Some("6".to_string()),
-            VirtualKeyCode::Key7 => Some("7".to_string()),
-            VirtualKeyCode::Key8 => Some("8".to_string()),
-            VirtualKeyCode::Key9 => Some("9".to_string()),
-            VirtualKeyCode::Key0 => Some("0".to_string()),
-            
+    fn key_code_to_string(&self, key: &PhysicalKey) -> Option<String> {
+        match key {
+            PhysicalKey::Code(code) => {
+                match code {
+                    KeyCode::Enter => Some("Enter".to_string()),
+                    KeyCode::Space => Some("Space".to_string()),
+                    KeyCode::Backspace => Some("Backspace".to_string()),
+                    KeyCode::Delete => Some("Delete".to_string()),
+                    KeyCode::Tab => Some("Tab".to_string()),
+                    KeyCode::Escape => Some("Escape".to_string()),
+                    KeyCode::ArrowUp => Some("ArrowUp".to_string()),
+                    KeyCode::ArrowDown => Some("ArrowDown".to_string()),
+                    KeyCode::ArrowLeft => Some("ArrowLeft".to_string()),
+                    KeyCode::ArrowRight => Some("ArrowRight".to_string()),
+                    KeyCode::Home => Some("Home".to_string()),
+                    KeyCode::End => Some("End".to_string()),
+                    KeyCode::PageUp => Some("PageUp".to_string()),
+                    KeyCode::PageDown => Some("PageDown".to_string()),
+                    
+                    // Function keys
+                    KeyCode::F1 => Some("F1".to_string()),
+                    KeyCode::F2 => Some("F2".to_string()),
+                    KeyCode::F3 => Some("F3".to_string()),
+                    KeyCode::F4 => Some("F4".to_string()),
+                    KeyCode::F5 => Some("F5".to_string()),
+                    KeyCode::F6 => Some("F6".to_string()),
+                    KeyCode::F7 => Some("F7".to_string()),
+                    KeyCode::F8 => Some("F8".to_string()),
+                    KeyCode::F9 => Some("F9".to_string()),
+                    KeyCode::F10 => Some("F10".to_string()),
+                    KeyCode::F11 => Some("F11".to_string()),
+                    KeyCode::F12 => Some("F12".to_string()),
+                    
+                    // Letters
+                    KeyCode::KeyA => Some("a".to_string()),
+                    KeyCode::KeyB => Some("b".to_string()),
+                    KeyCode::KeyC => Some("c".to_string()),
+                    KeyCode::KeyD => Some("d".to_string()),
+                    KeyCode::KeyE => Some("e".to_string()),
+                    KeyCode::KeyF => Some("f".to_string()),
+                    KeyCode::KeyG => Some("g".to_string()),
+                    KeyCode::KeyH => Some("h".to_string()),
+                    KeyCode::KeyI => Some("i".to_string()),
+                    KeyCode::KeyJ => Some("j".to_string()),
+                    KeyCode::KeyK => Some("k".to_string()),
+                    KeyCode::KeyL => Some("l".to_string()),
+                    KeyCode::KeyM => Some("m".to_string()),
+                    KeyCode::KeyN => Some("n".to_string()),
+                    KeyCode::KeyO => Some("o".to_string()),
+                    KeyCode::KeyP => Some("p".to_string()),
+                    KeyCode::KeyQ => Some("q".to_string()),
+                    KeyCode::KeyR => Some("r".to_string()),
+                    KeyCode::KeyS => Some("s".to_string()),
+                    KeyCode::KeyT => Some("t".to_string()),
+                    KeyCode::KeyU => Some("u".to_string()),
+                    KeyCode::KeyV => Some("v".to_string()),
+                    KeyCode::KeyW => Some("w".to_string()),
+                    KeyCode::KeyX => Some("x".to_string()),
+                    KeyCode::KeyY => Some("y".to_string()),
+                    KeyCode::KeyZ => Some("z".to_string()),
+                    
+                    // Numbers
+                    KeyCode::Digit1 => Some("1".to_string()),
+                    KeyCode::Digit2 => Some("2".to_string()),
+                    KeyCode::Digit3 => Some("3".to_string()),
+                    KeyCode::Digit4 => Some("4".to_string()),
+                    KeyCode::Digit5 => Some("5".to_string()),
+                    KeyCode::Digit6 => Some("6".to_string()),
+                    KeyCode::Digit7 => Some("7".to_string()),
+                    KeyCode::Digit8 => Some("8".to_string()),
+                    KeyCode::Digit9 => Some("9".to_string()),
+                    KeyCode::Digit0 => Some("0".to_string()),
+                    
+                    _ => None,
+                }
+            }
             _ => None,
         }
     }
